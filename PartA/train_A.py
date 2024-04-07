@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
+import wandb
 
 # classes list
 classesList = ["Amphibia", "Animalia", "Arachnida", "Aves", "Fungi", "Insecta", "Mammalia", "Mollusca", "Plantae", "Reptilia"]
@@ -181,8 +182,8 @@ def find_accuracy(model, criterion, dataLoader, dataName):
     print(f'{dataName} Loss: {val_loss/len(dataLoader)}, '
           f'{dataName} Accuracy: {100*correct/total}%\n')
     
-#     wandb.log({f'{dataName}_accuracy': 100*correct/total})
-#     wandb.log({f'{dataName}_loss': val_loss/len(dataLoader)})
+    wandb.log({f'{dataName}_accuracy': 100*correct/total})
+    wandb.log({f'{dataName}_loss': val_loss/len(dataLoader)})
     
 def train_model(learning_rate, num_filters, filter_sizes, activation_fn, optimiser_fn, num_neurons_dense, weight_decay, dropout, useBatchNorm, batchSize, num_epochs, data_augumentation = 'no', base_dir = "inaturalist_12k"):
     activation_dict = {'relu': nn.ReLU(), 'elu': nn.ELU(), 'selu': nn.SELU(), 'silu': nn.SiLU(), 'gelu': nn.GELU(), 'mish': nn.Mish()}
@@ -265,8 +266,8 @@ def generateImage_30(model, testDataLoader):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument("--wandb_entity", "-we",help = "Wandb Entity used to track experiments in the Weights & Biases dashboard.", default="cs23m065")
-    # parser.add_argument("--wandb_project", "-wp",help="Project name used to track experiments in Weights & Biases dashboard", default="Assignment 2")
+    parser.add_argument("--wandb_entity", "-we",help = "Wandb Entity used to track experiments in the Weights & Biases dashboard.", default="cs23m065")
+    parser.add_argument("--wandb_project", "-wp",help="Project name used to track experiments in Weights & Biases dashboard", default="Assignment 2")
     parser.add_argument("--epochs","-e", help= "Number of epochs to train neural network", type= int, default=10)
     parser.add_argument("--batch_size","-b",help="Batch size used to train neural network", type =int, default=16)
     parser.add_argument("--optimizer","-o",help="batch size is used to train neural network", default= "nadam", choices=['nadam', 'adam', 'rmsprop'])
@@ -283,8 +284,11 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
 
+    wandb.login()
+    wandb.init(project=args.wandb_project,entity=args.wandb_project)
     model = train_model(learning_rate = args.learning_rate, num_filters = args.num_filters, filter_sizes=args.filter_sizes, 
                     activation_fn = args.activation, optimiser_fn = args.optimizer, num_neurons_dense = args.dense_layer, 
                     weight_decay = args.weight_decay, dropout = args.dropout, useBatchNorm = args.batch_norm, batchSize = args.batch_size, 
                     num_epochs = args.epochs, data_augumentation = args.augumentaion, base_dir= args.base_dir)
+    wandb.finish()
    

@@ -112,8 +112,8 @@ def find_accuracy(model, criterion, dataLoader, dataName):
     
     print(f'{dataName} Loss: {val_loss/len(dataLoader)}, '
           f'{dataName} Accuracy: {100*correct/total}%\n')
-    # wandb.log({f"{dataName}_loss": val_loss/len(dataLoader)})
-    # wandb.log({f"{dataName}_accuracy": 100*correct/total})
+    wandb.log({f"{dataName}_loss": val_loss/len(dataLoader)})
+    wandb.log({f"{dataName}_accuracy": 100*correct/total})
 
 def config_and_train(base_dir = "inaturalist_12K",  learning_rate = 1e-4, weight_decay=0.005, epochs = 10, batchSize = 32, optimiser_fn = "nadam"):
     trainDataLoader, valDataLoader, testDataLoader = load_data(train_dir = f'{base_dir}/train', test_dir = f'{base_dir}/val', batchSize = batchSize)
@@ -136,8 +136,8 @@ def config_and_train(base_dir = "inaturalist_12K",  learning_rate = 1e-4, weight
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument("--wandb_entity", "-we",help = "Wandb Entity used to track experiments in the Weights & Biases dashboard.", default="cs23m065")
-    # parser.add_argument("--wandb_project", "-wp",help="Project name used to track experiments in Weights & Biases dashboard", default="Assignment 2")
+    parser.add_argument("--wandb_entity", "-we",help = "Wandb Entity used to track experiments in the Weights & Biases dashboard.", default="cs23m065")
+    parser.add_argument("--wandb_project", "-wp",help="Project name used to track experiments in Weights & Biases dashboard", default="Assignment 2")
     parser.add_argument("--epochs","-e", help= "Number of epochs to train neural network", type= int, default=10)
     parser.add_argument("--batch_size","-b",help="Batch size used to train neural network", type =int, default=16)
     parser.add_argument("--optimizer","-o",help="batch size is used to train neural network", default= "nadam", choices=['nadam', 'adam', 'rmsprop'])
@@ -146,4 +146,7 @@ if __name__ == "__main__":
     parser.add_argument("--base_dir", "-br", default="inaturalist_12K")
     
     args = parser.parse_args()
+    wandb.login()
+    wandb.init(project=args.wandb_project,entity=args.wandb_project)
     config_and_train(base_dir=args.base_dir, learning_rate=args.learning_rate, weight_decay = args.weight_decay, epochs=args.epochs, batchSize= args.batch_size, optimiser_fn=args.optimizer)
+    wandb.finish()
